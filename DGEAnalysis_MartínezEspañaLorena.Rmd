@@ -1,0 +1,372 @@
+---
+title: "DGE analysis using transcriptomic dynamic data"
+date: July de 2023
+author: Lorena Martínez España
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: false
+    lightbox: false
+    gallery: true
+    highlight: ta
+    code_folding: show
+---
+
+
+<style>
+body {
+text-align: justify}
+</style>
+
+---
+
+
+# 1. Obteining data and reference genome
+
+```{bash eval=FALSE}
+#Reference genome
+wget http://igenomes.illumina.com.s3-website-us-east-1.amazonaws.com/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Saccharomyces_cerevisiae_Ensembl_R64-1-1.tar.gz
+
+tar xvf Saccharomyces_cerevisiae_Ensembl_R64-1-1.tar.gz
+
+#Dataset
+prefetch --option-file lista.txt
+
+fastq-dump -I --split-files SRR11849386.sra 
+fastq-dump -I --split-files SRR11849387.sra
+
+fastq-dump -I --split-files SRR11849388.sra 
+fastq-dump -I --split-files SRR11849389.sra 
+fastq-dump -I --split-files SRR11849390.sra 
+fastq-dump -I --split-files SRR11849391.sra 
+fastq-dump -I --split-files SRR11849392.sra 
+fastq-dump -I --split-files SRR11849393.sra
+fastq-dump -I --split-files SRR11849394.sra
+fastq-dump -I --split-files SRR11849395.sra
+fastq-dump -I --split-files SRR11849396.sra
+fastq-dump -I --split-files SRR11849397.sra
+fastq-dump -I --split-files SRR11849398.sra
+fastq-dump -I --split-files SRR11849399.sra
+fastq-dump -I --split-files SRR11849400.sra
+fastq-dump -I --split-files SRR11849400.sra
+fastq-dump -I --split-files SRR11849400.sra
+fastq-dump -I --split-files SRR11849401.sra
+fastq-dump -I --split-files SRR11849402.sra
+fastq-dump -I --split-files SRR11849403.sra
+fastq-dump -I --split-files SRR11849404.sra
+fastq-dump -I --split-files SRR11849405.sra
+fastq-dump -I --split-files SRR11849406.sra
+fastq-dump -I --split-files SRR11849407.sra
+fastq-dump -I --split-files SRR11849408.sra
+fastq-dump -I --split-files SRR11849409.sra
+fastq-dump -I --split-files SRR11849410.sra
+fastq-dump -I --split-files SRR11849411.sra
+fastq-dump -I --split-files SRR11849412.sra
+```
+
+# 2. Check quality 
+```{bash eval=FALSE}
+fastqc SRR11849386_1.fastq
+fastqc SRR11849387_1.fastq
+fastqc SRR11849388_1.fastq
+fastqc SRR11849389_1.fastq
+fastqc SRR11849390_1.fastq
+fastqc SRR11849391_1.fastq
+fastqc SRR11849392_1.fastq
+fastqc SRR11849393_1.fastq
+fastqc SRR11849394_1.fastq
+fastqc SRR11849395_1.fastq
+fastqc SRR11849396_1.fastq
+fastqc SRR11849397_1.fastq
+fastqc SRR11849398_1.fastq
+fastqc SRR11849399_1.fastq
+fastqc SRR11849400_1.fastq
+fastqc SRR11849401_1.fastq
+fastqc SRR11849402_1.fastq
+fastqc SRR11849403_1.fastq
+fastqc SRR11849404_1.fastq
+fastqc SRR11849405_1.fastq
+fastqc SRR11849406_1.fastq
+fastqc SRR11849407_1.fastq
+fastqc SRR11849408_1.fastq
+fastqc SRR11849409_1.fastq
+fastqc SRR11849410_1.fastq
+fastqc SRR11849411_1.fastq
+fastqc SRR11849412_1.fastq
+python3 -m multiqc .
+
+```
+
+
+# 3. Alignment
+
+```{bash eval=FALSE}
+#Genome indexing
+bowtie2-build -p 4 genome.fa bowtie_index
+
+#Mapping
+bowtie2 -x genome SRR11849386_1.fastq -S SRR11849386.sam
+bowtie2 -x genome SRR11849387_1.fastq -S SRR11849387.sam
+bowtie2 -x genome SRR11849388_1.fastq -S SRR11849388.sam
+bowtie2 -x genome SRR11849389_1.fastq -S SRR11849389.sam
+bowtie2 -x genome SRR11849390_1.fastq -S SRR11849390.sam
+bowtie2 -x genome SRR11849391_1.fastq -S SRR11849391.sam
+bowtie2 -x genome SRR11849392_1.fastq -S SRR11849392.sam
+bowtie2 -x genome SRR11849393_1.fastq -S SRR11849393.sam
+bowtie2 -x genome SRR11849394_1.fastq -S SRR11849394.sam
+bowtie2 -x genome SRR11849395_1.fastq -S SRR11849395.sam
+bowtie2 -x genome SRR11849396_1.fastq -S SRR11849396.sam
+bowtie2 -x genome SRR11849397_1.fastq -S SRR11849397.sam
+bowtie2 -x genome SRR11849398_1.fastq -S SRR11849398.sam
+bowtie2 -x genome SRR11849398_1.fastq -S SRR11849398.sam
+bowtie2 -x genome SRR11849399_1.fastq -S SRR11849399.sam
+bowtie2 -x genome SRR11849400_1.fastq -S SRR11849400.sam
+bowtie2 -x genome SRR11849401_1.fastq -S SRR11849401.sam
+bowtie2 -x genome SRR11849402_1.fastq -S SRR11849402.sam
+bowtie2 -x genome SRR11849403_1.fastq -S SRR11849403.sam
+bowtie2 -x genome SRR11849404_1.fastq -S SRR11849404.sam
+bowtie2 -x genome SRR11849405_1.fastq -S SRR11849405.sam
+bowtie2 -x genome SRR11849406_1.fastq -S SRR11849406.sam
+bowtie2 -x genome SRR11849407_1.fastq -S SRR11849407.sam
+bowtie2 -x genome SRR11849408_1.fastq -S SRR11849408.sam
+bowtie2 -x genome SRR11849409_1.fastq -S SRR11849409.sam
+bowtie2 -x genome SRR11849410_1.fastq -S SRR11849410.sam
+bowtie2 -x genome SRR11849411_1.fastq -S SRR11849411.sam
+bowtie2 -x genome SRR11849412_1.fastq -S SRR11849412.sam
+```
+
+
+# 4. Sorting SAM files into BAM files
+
+```{bash eval=FALSE}
+samtools sort -n SRR11849386.sam -o SRR11849386.bam
+samtools sort -n SRR11849387.sam -o SRR11849387.bam
+samtools sort -n SRR11849388.sam -o SRR11849388.bam
+samtools sort -n SRR11849389.sam -o SRR11849389.bam
+samtools sort -n SRR11849390.sam -o SRR11849390.bam
+samtools sort -n SRR11849391.sam -o SRR11849391.bam
+samtools sort -n SRR11849392.sam -o SRR11849392.bam
+samtools sort -n SRR11849393.sam -o SRR11849393.bam
+samtools sort -n SRR11849394.sam -o SRR11849394.bam
+samtools sort -n SRR11849395.sam -o SRR11849395.bam
+samtools sort -n SRR11849396.sam -o SRR11849397.bam
+samtools sort -n SRR11849397.sam -o SRR11849397.bam
+samtools sort -n SRR11849398.sam -o SRR11849398.bam
+samtools sort -n SRR11849399.sam -o SRR11849399.bam
+samtools sort -n SRR11849400.sam -o SRR11849400.bam
+samtools sort -n SRR11849401.sam -o SRR11849401.bam
+samtools sort -n SRR11849402.sam -o SRR11849402.bam
+samtools sort -n SRR11849403.sam -o SRR11849403.bam
+samtools sort -n SRR11849404.sam -o SRR11849404.bam
+samtools sort -n SRR11849405.sam -o SRR11849405.bam
+samtools sort -n SRR11849406.sam -o SRR11849406.bam
+samtools sort -n SRR11849407.sam -o SRR11849407.bam
+samtools sort -n SRR11849408.sam -o SRR11849408.bam
+samtools sort -n SRR11849409.sam -o SRR11849409.bam
+samtools sort -n SRR11849410.sam -o SRR11849410.bam
+samtools sort -n SRR11849411.sam -o SRR11849411.bam
+samtools sort -n SRR11849412.sam -o SRR11849412.bam
+
+```
+
+
+# 5. Computing read counts
+
+```{bash eval=FALSE}
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849386.bam genes.gtf > waterLog_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849387.bam genes.gtf > waterLog_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849388.bam genes.gtf > waterLog_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849389.bam genes.gtf > water24_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849390.bam genes.gtf > water24_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849391.bam genes.gtf > water24_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849392.bam genes.gtf > water96_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849393.bam genes.gtf > water96_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849394.bam genes.gtf > water96_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849395.bam genes.gtf > NRCMLog_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849396.bam genes.gtf > NRCMLog_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849397.bam genes.gtf > NRCMLog_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849398.bam genes.gtf > NRCM24_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849399.bam genes.gtf > NRCM24_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849400.bam genes.gtf > NRCM24_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849401.bam genes.gtf > NRCM96_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849402.bam genes.gtf > NRCM96_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849403.bam genes.gtf > NRCM96_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849404.bam genes.gtf > CRCMLog_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849405.bam genes.gtf > CRCMLog_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849406.bam genes.gtf > CRCMLog_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849407.bam genes.gtf > CRCM24_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849408.bam genes.gtf > CRCM24_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849409.bam genes.gtf > CRCM24_3.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849410.bam genes.gtf > CRCM96_1.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849411.bam genes.gtf > CRCM96_2.count.gene
+htseq-count --format=bam --stranded=no --type=exon --idattr=gene_id SRR11849412.bam genes.gtf > CRCM96_3.count.gene
+```
+
+# 6. Libraries used in R and colors
+
+```{r eval=FALSE}
+my_palette <- hcl.colors(27, palette = "Temps", alpha = NULL, rev = FALSE, fixup = TRUE)
+library(edgeR)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(DESeq2)
+library(VennDiagram)
+```
+
+# 7. Building count matrix and metadata
+
+```{r eval=FALSE}
+files <- c('waterLog_1.count.gene', 'waterLog_2.count.gene', 'waterLog_3.count.gene',
+           'water24_1.count.gene', 'water24_2.count.gene', 'water24_3.count.gene',
+           'water96_1.count.gene', 'water96_2.count.gene', 'water96_3.count.gene',
+           'CRCMLog_1.count.gene', 'CRCMLog_2.count.gene', 'CRCMLog_3.count.gene',
+           'CRCM24_1.count.gene', 'CRCM24_2.count.gene', 'CRCM24_3.count.gene',
+           'CRCM96_1.count.gene', 'CRCM96_2.count.gene', 'CRCM96_3.count.gene',
+           'NRCMLog_1.count.gene', 'NRCMLog_2.count.gene', 'NRCMLog_3.count.gene',
+           'NRCM24_1.count.gene', 'NRCM24_2.count.gene', 'NRCM24_3.count.gene',
+           'NRCM96_1.count.gene', 'NRCM96_2.count.gene', 'NRCM96_3.count.gene')
+
+data <- readDGE(files = files)
+dim(data)
+
+summary(data$counts)
+counts <- data$counts
+counts
+#Aquí obtenemos la matriz de conteos
+new_colnames_count <- c('Sample1', 'Sample2', 'Sample3',
+           'Sample4', 'Sample5', 'Sample6',
+           'Sample7', 'Sample8', 'Sample9',
+           'Sample10', 'Sample11', 'Sample12',
+           'Sample13', 'Sample14', 'Sample15',
+           'Sample16', 'Sample17', 'Sample18',
+           'Sample19', 'Sample20', 'Sample21',
+           'Sample22', 'Sample23', 'Sample24',
+           'Sample25', 'Sample26', 'Sample27')
+
+colnames(counts) <- new_colnames_count
+counts
+dim(counts)
+metadata <- read.csv2("MetadataGSE151185.txt", header = TRUE, stringsAsFactors = FALSE)
+metadata
+
+rownames(metadata) <- metadata$Sample_ID
+head(metadata)
+all.equal(colnames(counts), row.names(metadata))
+```
+
+# 8. Quality of samples based on reads and exons detected
+
+```{r eval=FALSE}
+#Boxplot for mean of Log10(reads)
+boxplot(log10(as.matrix(counts)+1),ylab=expression('Log'[10]~'Read counts'),las=2, main="Raw data", col=my_palette)
+
+#Number of exons detected
+{barplot(colSums(counts>0),ylab="Number of detected genes",las=2, col=my_palette)
+abline(h=median(colSums(counts>0)))}
+```
+
+
+# 9. Normalisation with DESeq2
+
+```{r eval=FALSE}
+metadata$Time <- factor(metadata$Time)
+data <- DESeqDataSetFromMatrix(countData = counts, colData = metadata, design = ~Time)
+data <- DESeq2::estimateSizeFactors(data, type ="ratio")
+dds <- DESeq(data)
+assay(dds, "counts.norm") <- counts(data, normalized=TRUE)
+```
+
+
+# 10. Exploratory analysis: PCA
+
+```{r eval=FALSE}
+# % of variance explained by each PC
+pcaobj <- prcomp(x=t(assay(dds, "counts.norm")))
+{barplot(round(pcaobj$sdev^2/sum(pcaobj$sdev^2)*100,2),las=2,
+        names.arg=colnames(pcaobj$x),ylab="% Variance explained",
+        xlab="PCA principal components", col=my_palette)
+abline(h=2, lty=2)} + theme_minimal()
+
+#PCA representaton by variable 'Time'
+pca_mat1 <- as.data.frame(pcaobj$x)
+pca_mat2 <- merge(pca_mat1,metadata,by=0)
+
+variances <- round(pcaobj$sdev^2 / sum(pcaobj$sdev^2) * 100, 2)
+ggplot(pca_mat2, aes(PC1, PC2, color = Time)) +
+  geom_point(size = 1) +
+  scale_color_manual(values = colores) +
+  theme_minimal() +
+  labs(x = paste0("PCA1 (", variances[1], "%)"),
+       y = paste0("PCA2 (", variances[2], "%)"))
+
+#PCA representaton by variable 'Medium'
+pca_mat1 <- as.data.frame(pcaobj$x)
+pca_mat2 <- merge(pca_mat1,metadata,by=0)
+
+variances <- round(pcaobj$sdev^2 / sum(pcaobj$sdev^2) * 100, 2)
+ggplot(pca_mat2, aes(PC1, PC2, color = Medium)) +
+  geom_point(size = 1) +
+  scale_color_manual(values = colores) +
+  theme_minimal() +
+  labs(x = paste0("PCA1 (", variances[1], "%)"),
+       y = paste0("PCA2 (", variances[2], "%)"))
+```
+
+# 11. DGE analysis with DESeq2 and BH method
+```{r eval=FALSE}
+design(data) <- ~group
+data_group <- DESeq(data)
+
+
+res_Log_24 <- results(data_group, contrast=c("group","Log", "24h"))
+res_Log_96 <- results(data_group, contrast=c("group","Log", "96h"))
+res_24_96 <- results(data_group, contrast=c("group","24h", "96h"))
+
+pvals_Log_24 <- res_Log_24$pvalue
+pvals_Log_96 <- res_Log_96$pvalue
+pvals_24_96 <- res_24_96$pvalue
+adjusted_pvals_Log_24 <- p.adjust(pvals_Log_24, method = "BH")
+adjusted_pvals_Log_96 <- p.adjust(pvals_Log_96, method = "BH")
+adjusted_pvals_24_96 <- p.adjust(pvals_24_96, method = "BH")
+
+
+df_res_Log_24 <- data.frame(res_Log_24)
+res_Log_24_sig <- subset(df_res_Log_24, padj < 0.01)
+
+df_res_Log_96 <- data.frame(res_Log_96)
+res_Log_96_sig <- subset(df_res_Log_96, padj < 0.01)
+
+df_res_24_96 <- data.frame(res_24_96)
+res_24_96_sig <- subset(df_res_24_96, padj < 0.01)
+```
+
+
+# 12. Venn diagram for differential expressed genes
+
+```{r eval=FALSE}
+venn<-VennDiagram::venn.diagram(
+  x = list(rownames(res_Log_24_sig), rownames(res_Log_96_sig), rownames(res_24_96_sig)),
+  category.names = c("Log vs. 24h" , "Log vs. 96h" , "24h vs. 96h"),
+  filename = 'DGE.png',
+  imagetype = "png",
+  output=TRUE,         
+  height = 480 , 
+  width = 480 , 
+  resolution = 300,
+  compression = "lzw",
+  lwd = 0.1,
+  col=c("black", 'black', 'black'),#white
+  fill = c(alpha("#FFFF00",0.6), alpha('#00C5CD',0.6), alpha('#EE5C42',0.6)),
+  cex = 0.5,
+  fontfamily = "Calibri",
+  cat.cex = 0.4,
+  cat.default.pos = "outer",
+  cat.pos = c(-27, 27, 135),
+  cat.dist = c(0.055, 0.055, 0.085),
+  cat.fontfamily = "Calibri",
+  cat.col = c("black", 'black', 'black'),
+  rotation = 1
+)
+venn
+```
